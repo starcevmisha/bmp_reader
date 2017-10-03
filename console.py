@@ -13,8 +13,10 @@ with open(args.name, 'rb') as f:
     header = reader.read_header(file)
     print('BitmapFileHeader')
     for i in header:
-        print(' '*4 + i)
+        print(' ' * 4 + i)
     info = reader.read_info(file, header.version)
     print("\nBitmapInfoHeader")
     for i in info:
-        print(' '*4 + i)
+        print(' ' * 4 + i)
+
+    a = reader.read_pallete(file, info)

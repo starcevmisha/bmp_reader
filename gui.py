@@ -1,58 +1,27 @@
+from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QLabel, QMessageBox, QDialog
+from PyQt5.QtWidgets import QApplication
+from sys import argv
 import sys
-from PyQt5.QtWidgets import (
-    QWidget,
-    QHBoxLayout,
-    QFrame,
-    QTextEdit,
-    QPlainTextEdit,
-    QSplitter,
-    QStyleFactory,
-    QApplication,
-    QLabel)
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPalette, QPixmap, QBrush
 
 
-class Example(QWidget):
+class MainWidget(QtWidgets.QMainWindow):
 
-    def __init__(self, name, tags, text):
-        self.app = QApplication(sys.argv)
-        super().__init__()
+    def __init__(self, filename=None, parent=None):
+        QtWidgets.QMainWindow.__init__(self, parent)
+        self.file_name = filename
+        self.color_table = None
+        self.dock_widget = QtWidgets.QDockWidget(self)
+        self.dock_widget.hide()
+        self.init_ui()
+        if self.file_name is not None and self.file_name != '':
+            self.open_file(self.file_name)
 
-        self.title = name
+    def init_ui(self):
 
-        self.initUI(name, tags, text)
-
-    def initUI(self, name, tags, text):
-        hbox = QHBoxLayout(self)
-
-        top = QLabel()
-        pixmap = QPixmap("123.jpg")
-        top.setPixmap(pixmap)
-        top.show()
-
-        bottom = QPlainTextEdit(text)
-        bottom.setFrameShape(QFrame.StyledPanel)
-
-        splitter1 = QSplitter(Qt.Horizontal)
-        splitter1.addWidget(top)
-        splitter1.addWidget(bottom)
-
-        hbox.addWidget(splitter1)
-        self.setLayout(hbox)
-
-        self.setGeometry(200, 200, 500, 600)
-        self.setWindowTitle(self.title)
+        self.setWindowTitle('BMP file opener')
         self.show()
 
-    def onChanged(self, text):
-
-        self.lbl.setText(text)
-        self.lbl.adjustSize()
-
-
-if __name__ == '__main__':
-
-    app = QApplication(sys.argv)
-    ex = Example()
-    sys.exit(app.exec_())
+if __name__ == "__main__":
+    app = QApplication(argv)
+    widget = MainWidget('lena.bmp')
