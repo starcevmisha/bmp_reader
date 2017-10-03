@@ -1,33 +1,39 @@
-from struct import unpack
+from struct import unpack, pack
 
 versions = {
     12: 'CORE',
     40: 3,
     108: 4,
-    125: 5
+    124: 5
 }
 
 class FileHeader:
 
-    def __init__(self, size, offset, version):
+    def __init__(self, size, reserved1,reserved2,offset, version):
         self.size = size
+        self.reserved1 = reserved1
+        self.reserved2 = reserved2
         self.offset = offset
         self.version = version
     def __iter__(self):
-        yield "File Size: {} byte".format(self.size)
-        yield "Offset: {} byte".format(self.offset)
-        yield "Version: {}".format(self.version)
+        yield "bfSize: {} byte".format(self.size)
+        yield "bfReserved1: {}".format(self.reserved1)
+        yield "bfReserved2: {}".format(self.reserved2)
+        yield "bfOffBits: {} byte".format(self.offset)
+        # yield "Version: {}".format(self.version)
 
 
 class BitmapCoreHeader:
 
     def __init__(self):
         self.version = ''
+        self.size = 0
         self.width = 0
         self.height = 0
         self.planes_count = 0
     def __iter__(self):
         yield "Version: {}".format(self.version)
+        yield "biSize: {} byte".format(self.size)
         yield "Width: {} px".format(self.width)
         yield "Height: {} px".format(self.height)
         yield "Planes count: {}".format(self.planes_count)
@@ -45,6 +51,10 @@ class BitmapV3Header(BitmapCoreHeader):
         self.y_pels_per_meter = 0
         self.clr_used = 0
         self.clr_important = 0
+        self.red_mask = None
+        self.green_mask = None
+        self.blue_mask = None
+        self.alpha_mask = None
 
     @property
     def clr_used(self):
@@ -54,6 +64,18 @@ class BitmapV3Header(BitmapCoreHeader):
     def clr_used(self, value):
         self._clr_used = value \
             if value != 0 or self.bit_count > 8 else 2 ** self.bit_count
+
+    def set_default_masks(self):
+        if self.bit_count == 16:
+            self.red_mask = 31744
+            self.green_mask = 992
+            self.blue_mask = 31
+            self.alpha_mask = 0
+        elif self.bit_count == 32:
+            self.red_mask = 0x00ff0000
+            self.green_mask = 0x0000ff00
+            self.blue_mask = 0x000000ff
+            self.alpha_mask = 0x00000000
 
     def __iter__(self):
         for i in super().__iter__():
@@ -66,15 +88,24 @@ class BitmapV3Header(BitmapCoreHeader):
         yield "Colors in BitMap: {}".format(self.clr_used)
         yield "Used Colors: {}".format(self.clr_important)
 
+        yield "RedMask:   {}".format(pack('>I', self.red_mask).hex())
+        yield "GreenMask: {}".format(pack('>I', self.green_mask).hex())
+        yield "BlueMask:  {}".format(pack('>I', self.blue_mask).hex())
+        yield "AlphaMask: {}".format(pack('>I', self.alpha_mask).hex())
+
 class BitmapV4Header(BitmapV3Header):
 
     def __init__(self):
         super().__init__()
+        self.red_mask = None
+        self.green_mask = None
+        self.blue_mask = None
+        self.alpha_mask = None
         self.cs_type = 0
     def __iter__(self):
         for i in super().__iter__():
             yield i
-        yield "CS Type: {}".format(self.cs_type)
+        yield "CS Type:   {}".format(self.cs_type)
 
 
 class BitmapV5Header(BitmapV4Header):
@@ -100,10 +131,12 @@ class Reader:
 
     def read_header(self, file):
         size = unpack('<I', file[0x2:0x6])[0]
+        reserved1 = unpack('<H', file[0x6:0x8])[0]
+        reserved2 = unpack('<H', file[0x8:0xa])[0]
         offset = unpack('<I', file[0xa:0xa + 4])[0]
         version_size = unpack('<I', file[0xe:0xe + 4])[0]
         version = versions.get(version_size, 'Invalid Type')
-        return FileHeader(size, offset, version)
+        return FileHeader(size,reserved1,reserved2, offset, version)
 
     def read_info(self, file, version):
         read_version = {
@@ -117,6 +150,7 @@ class Reader:
     def read_core(self, file):
         info = BitmapCoreHeader()
         info.version = 'Core'
+        info.size = unpack('<I', file[0xe:0xe + 4])[0]
         info.width = unpack('<H', file[0x12:0x12 + 2])[0]
         info.height = unpack('<H', file[0x14:0x14 + 2])[0]
         info.planes_count = unpack('<H', file[0x16:0x16 + 2])[0]
@@ -128,16 +162,23 @@ class Reader:
         if info is None:
             info = BitmapV3Header()
             info.version = 3
+        info.size = unpack('<I', file[0xe:0xe + 4])[0]
         info.width = unpack('<i', file[0x12:0x12 + 4])[0]
         info.height = unpack('<i', file[0x16:0x16 + 4])[0]
         info.planes = unpack('<H', file[0x1a:0x1a + 2])[0]
         info.bit_count = unpack('<H', file[0x1c:0x1c + 2])[0]
+        info.set_default_masks()
         info.compression = unpack('<I', file[0x1e:0x1e + 4])[0]
         info.size_image = unpack('<I', file[0x22:0x22 + 4])[0]
         info.x_pels_per_meter = unpack('<i', file[0x26:0x26 + 4])[0]
         info.y_pels_per_meter = unpack('<i', file[0x2a:0x2a + 4])[0]
         info.clr_used = unpack('<I', file[0x2e:0x2e + 4])[0]
         info.clr_important = unpack('<I', file[0x32:0x32 + 4])[0]
+        if (info.compression == 3 or info.compression == 6):
+            info.red_mask = unpack('<I', file[0x36:0x36 + 4])[0]
+            info.green_mask = unpack('<I', file[0x3a:0x3a + 4])[0]
+            info.blue_mask = unpack('<I', file[0x3e:0x3e + 4])[0]
+            info.alpha_mask = unpack('<I', file[0x42:0x42 + 4])[0]
         return info
 
 
@@ -146,7 +187,10 @@ class Reader:
             info = BitmapV4Header()
             info.version = 4
         info = self.read_v3(file, info)
-        info.cs_type = unpack('<I', file[0x46:0x46 + 4])[0]
+
+
+
+        info.cs_type = pack('>I', unpack('<I', file[0x46:0x46 + 4])[0])
         return info
 
 
