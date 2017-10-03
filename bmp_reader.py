@@ -213,7 +213,7 @@ class Reader:
         info.reserved = unpack('<I', file[0x86:0x86 + 4])[0]
         return info
 
-    def read_pallete(self, file, info):
+    def read_pallete(self, file, info): # Достаёт таблицу цветов если есть
         start_pos = 0
         if (info.version == 'CORE'):
             start_pos = 0x1a
@@ -232,11 +232,18 @@ class Reader:
         # TODO сделать таблицу цветов и потом считывать Массив
         palette = []
         for index in range(info.clr_used):
-            start_pos = start_pos + index * 4
-            color = file[start_pos:start_pos + 4][::-1]
+            offset = start_pos + index * 4
+            color = file[offset:offset + 4][::-1]
             red = color[1]
             green = color[2]
             blue = color[3]
             palette.append((red, green, blue))
         return palette
 
+def group_palette_by(palette, number):
+    result = []
+    for index in range(len(palette)):
+        if index % number == 0:
+            result.append([])
+        result[-1].append(palette[index])
+    return result
