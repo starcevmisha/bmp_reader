@@ -40,7 +40,7 @@ class MainWidget(QMainWindow):
 
     def show_palette(self):
         palette_widget = PaletteWidget(self.color_table)
-        palette_widget.setGeometry(200, 100, 700, 200)
+        palette_widget.setGeometry(300, 300, 600, 200)
         palette_widget.exec_()
 
 
@@ -64,7 +64,8 @@ class PaletteWidget(QDialog):
 
     def draw_palette(self, painter, palette_arr):
         color_size = 20
-        chunks = [palette_arr[x:x + 10] for x in range(0, len(palette_arr), 10)]
+        count = self.height() // color_size
+        chunks = [palette_arr[x:x + count] for x in range(0, len(palette_arr),count)]
         for i in range(len(chunks)):
             for j in range(len(chunks[i])):
                 painter.fillRect(i*color_size, j*color_size, color_size, color_size,
@@ -73,7 +74,7 @@ class PaletteWidget(QDialog):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    widget = MainWidget('lena.bmp')
+    widget = MainWidget('pal8gs.bmp')
     widget.show()
     app.exec_()
 # TODO при нажати кнопки выводить следующее изображение из всех в папке

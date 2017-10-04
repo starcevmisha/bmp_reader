@@ -239,11 +239,3 @@ class Reader:
             blue = color[3]
             palette.append((red, green, blue))
         return palette
-
-def group_palette_by(palette, number):
-    result = []
-    for index in range(len(palette)):
-        if index % number == 0:
-            result.append([])
-        result[-1].append(palette[index])
-    return result
