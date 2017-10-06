@@ -11,7 +11,7 @@ args = parser.parse_args()
 
 if (args.gui):
     app = QApplication(sys.argv)
-    widget = gui.MainWidget('pal1.bmp')
+    widget = gui.MainWidget(args.name)
     widget.show()
     app.exec_()
 else:
