@@ -213,7 +213,7 @@ class Reader:
         info.reserved = unpack('<I', file[0x86:0x86 + 4])[0]
         return info
 
-    def read_pallete(self, file, info): # Достаёт таблицу цветов если есть
+    def read_pallete(self, file, info):  # Достаёт таблицу цветов если есть
         start_pos = 0
         if (info.version == 'CORE'):
             start_pos = 0x1a
