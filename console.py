@@ -6,7 +6,7 @@ import gui
 
 parser = argparse.ArgumentParser()
 parser.add_argument('name', type=str, help='file name')
-parser.add_argument('--gui',action='store_true',help='GUI')
+parser.add_argument('--gui', action='store_true', help='GUI')
 args = parser.parse_args()
 
 if (args.gui):

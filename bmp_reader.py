@@ -67,7 +67,8 @@ class BitmapV3Header(BitmapCoreHeader):
 
     @clr_used.setter
     def clr_used(self, value):
-        self._clr_used = value if value != 0 or self.bit_count > 8 else 2 ** self.bit_count
+        self._clr_used = value if value != 0 or \
+            self.bit_count > 8 else 2 ** self.bit_count
 
     def set_default_masks(self):
         if self.bit_count == 16:
@@ -215,8 +216,10 @@ class Reader:
 
     def read_pallete(self, file, info):  # Достаёт таблицу цветов если есть
         start_pos = 0
-        if (info.version == 'CORE'):
+        if (info.version == 'Core'):
             start_pos = 0x1a
+            info.clr_used = 2**info.bit_count
+            return self.rgbtriple(file, info, start_pos)
         if(info.version == 3):
             if info.compression == 3:
                 start_pos = 0x42
@@ -229,7 +232,9 @@ class Reader:
         elif info.version == 5:
             start_pos = 0x8a
 
-        # TODO сделать таблицу цветов и потом считывать Массив
+        return self.rgbquad(file, info, start_pos)
+
+    def rgbquad(self, file, info, start_pos):
         palette = []
         for index in range(info.clr_used):
             offset = start_pos + index * 4
@@ -237,5 +242,16 @@ class Reader:
             red = color[1]
             green = color[2]
             blue = color[3]
+            palette.append((red, green, blue))
+        return palette
+
+    def rgbtriple(self, file, info, start_pos):
+        palette = []
+        for index in range(info.clr_used):
+            offset = start_pos + index * 3
+            color = file[offset:offset + 3][::-1]
+            red = color[0]
+            green = color[1]
+            blue = color[2]
             palette.append((red, green, blue))
         return palette

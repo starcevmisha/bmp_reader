@@ -2,6 +2,7 @@ from struct import unpack
 
 
 class Extractor:
+
     def __init__(self, file, header, info, palette):
         self.file = file
         self.header = header
@@ -32,28 +33,58 @@ class Extractor:
         blue = f_string.format(self.info.blue_mask)
         self.blue_left, self.blue_right = blue.find('1'), blue.rfind('1')
         alpha = f_string.format(
-            self.info.alpha_mask) if self.info.alpha_mask <= 2 ** self.info.bit_count else '0'
+            self.info.alpha_mask) if self.info.alpha_mask \
+            <= 2 ** self.info.bit_count else '0'
         self.alpha_left, self.alpha_right = alpha.find('1'), alpha.rfind('1')
+
+        red_length = len('{:b}'.format(self.info.red_mask).strip('0'))
+        green_length = len('{:b}'.format(self.info.green_mask).strip('0'))
+        blue_length = len('{:b}'.format(self.info.blue_mask).strip('0'))
+        self.alpha_length = len('{:b}'.format(self.info.alpha_mask).strip('0'))
+
+        red_max = 2 ** red_length - 1
+        green_max = 2 ** green_length - 1
+        blue_max = 2 ** blue_length - 1
+        alpha_max = 2 ** self.alpha_length - 1
+
+        self.red_factor = 255 / red_max if red_max != 0 else 1
+        self.green_factor = 255 / green_max if green_max != 0 else 1
+        self.blue_factor = 255 / blue_max if blue_max != 0 else 1
+        self.alpha_factor = 255 / alpha_max if alpha_max != 0 else 1
 
     def get_pixel(self, size):
         offset = self.header.offset
         pixels_readed_in_line = 0
-        row_num = self.info.height - 1
-
         self.get_color = self.color_extract_func[self.info.bit_count]
 
-        while row_num >= 0:
-            color, offset = self.get_color(offset)
-            pixels_readed_in_line += 1
-            x = pixels_readed_in_line*size
-            y = row_num*size
-            yield (x, y), color
-            if pixels_readed_in_line >= self.info.width:  # Прочитали строку
-                while (offset - self.header.offset) % 4 != 0:
-                    offset += 1
-                row_num -= 1
-                pixels_readed_in_line = 0
-                self.returned_bits = 0
+        if self.info.height > 0:
+            row_num = self.info.height - 1
+            while row_num >= 0:
+                color, offset = self.get_color(offset)
+                pixels_readed_in_line += 1
+                x = pixels_readed_in_line * size
+                y = row_num * size
+                yield (x, y), color
+                if pixels_readed_in_line >= self.info.width:  # Прочиталистроку
+                    while (offset - self.header.offset) % 4 != 0:
+                        offset += 1
+                    row_num -= 1
+                    pixels_readed_in_line = 0
+                    self.returned_bits = 0
+        else:  # Если перевернуто изображение
+            row_num = self.info.height + 1
+            while row_num <= 0:
+                color, offset = self.get_color(offset)
+                pixels_readed_in_line += 1
+                x = pixels_readed_in_line * size
+                y = (row_num - self.info.height) * size
+                yield (x, y), color
+                if pixels_readed_in_line >= self.info.width:  # Прочиталистроку
+                    while (offset - self.header.offset) % 4 != 0:
+                        offset += 1
+                    row_num += 1
+                    pixels_readed_in_line = 0
+                    self.returned_bits = 0
 
     def get_32_bit_color(self, offset):
         color = self.int_to_rgb(unpack('<I', self.file[offset:offset + 4])[0])
@@ -86,8 +117,8 @@ class Extractor:
 
         color_num = int(
             self.color_bits[
-            self.returned_bits:self.returned_bits +
-                               self.info.bit_count],
+                self.returned_bits:self.returned_bits +
+                self.info.bit_count],
             2)
 
         self.returned_bits += self.info.bit_count
@@ -96,14 +127,25 @@ class Extractor:
         return self.palette[color_num], offset
 
     def int_to_rgb(self, color):
-        f_string = '{:032b}' if self.info.bit_count == 32 else '{:016b}'
-        red = int(f_string.format(color)[self.red_left:self.red_right + 1], 2)
-        green = int(
-            f_string.format(color)[
-            self.green_left:self.green_right + 1], 2)
-        blue = int(
-            f_string.format(color)[
-            self.blue_left:self.blue_right + 1], 2)
-        # int(f_string.format(color)[self.alpha_left:self.alpha_right + 1],2)
-        alpha = 255
+        bin_string = '{:032b}' if self.info.bit_count == 32 else '{:016b}'
+
+        red_bin = bin_string.format(color)[self.red_left:self.red_right + 1]
+        red = int(red_bin, 2) * self.red_factor if red_bin != '' else 0
+
+        green_bin = bin_string.format(color)[
+            self.green_left:self.green_right + 1]
+        green = int(green_bin, 2) * self.green_factor if green_bin != '' else 0
+
+        blue_bin = bin_string.format(color)[self.blue_left:self.blue_right + 1]
+        blue = int(blue_bin, 2) * self.blue_factor if blue_bin != '' else 0
+
+        alpha_bin = bin_string.format(color)[
+            self.alpha_left:self.alpha_right + 1]
+        if self.alpha_length == 0 or self.alpha_left == - \
+                1:  # If alpha mask does not exist
+            alpha = 255
+        elif alpha_bin.strip('0') == '':  # if alpha does not exist in color
+            alpha = 0
+        else:
+            alpha = int(alpha_bin, 2) * self.alpha_factor
         return (red, green, blue, alpha)
