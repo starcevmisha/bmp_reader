@@ -5,17 +5,18 @@ from PyQt5.QtWidgets import QApplication
 import gui
 
 parser = argparse.ArgumentParser()
-parser.add_argument('name', type=str, help='file name')
+parser.add_argument('-f', '--file', type=str, help='file name')
+parser.add_argument('-d', '--dir', help='view all files in directory')
 parser.add_argument('--gui', action='store_true', help='GUI')
 args = parser.parse_args()
 
 if (args.gui):
     app = QApplication(sys.argv)
-    widget = gui.MainWidget(args.name)
+    widget = gui.MainWidget(args)
     widget.show()
     app.exec_()
 else:
-    with open(args.name, 'rb') as f:
+    with open(args.file, 'rb') as f:
         file = f.read()
         reader = bmp_reader.Reader()
         reader.check_file_type(file)

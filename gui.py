@@ -12,20 +12,29 @@ import os
 
 class MainWidget(QMainWindow):
 
-    def __init__(self, filename=None, parent=None):
+    def __init__(self, args, parent=None):
         QtWidgets.QMainWindow.__init__(self, parent)
-        self.file_name = os.path.realpath(filename)
         self.palette = []
         self.initUI()
 
-        self.set_image(self.file_name)
+        if args.file:
+            self.file_name = os.path.realpath(args.file)
 
-        directory = os.path.dirname(os.path.realpath(self.file_name))
-        self.list_of_bmp_files = [
-            directory +
-            '\\' +
-            f for f in os.listdir(directory) if f.endswith('.bmp')]
-        self.list_index = self.list_of_bmp_files.index(self.file_name)
+            directory = os.path.dirname(os.path.realpath(self.file_name))
+            self.list_of_bmp_files = [
+                directory +
+                '\\' +
+                f for f in os.listdir(directory) if f.endswith('.bmp')]
+            self.list_index = self.list_of_bmp_files.index(self.file_name)
+        if args.dir:
+            directory = os.path.dirname(os.path.realpath(args.dir))+'\\'+args.dir
+            self.list_of_bmp_files = [
+                directory +
+                '\\' +
+                f for f in os.listdir(directory) if f.endswith('.bmp')]
+            self.file_name = self.list_of_bmp_files[0]
+            self.list_index = self.list_of_bmp_files.index(self.file_name)
+        self.set_image(self.file_name)
 
     def initUI(self):
         palette_action = QtWidgets.QAction("&Show palette", self)
