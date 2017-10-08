@@ -15,7 +15,8 @@ if (args.gui):
     widget = gui.MainWidget(args)
     widget.show()
     app.exec_()
-else:
+elif args.file:
+
     with open(args.file, 'rb') as f:
         file = f.read()
         reader = bmp_reader.Reader()
@@ -28,5 +29,3 @@ else:
         print("\nBitmapInfoHeader")
         for i in info:
             print(' ' * 4 + i)
-
-    a = reader.read_pallete(file, info)
