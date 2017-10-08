@@ -27,7 +27,9 @@ class MainWidget(QMainWindow):
                 f for f in os.listdir(directory) if f.endswith('.bmp')]
             self.list_index = self.list_of_bmp_files.index(self.file_name)
         if args.dir:
-            directory = os.path.dirname(os.path.realpath(args.dir))+'\\'+args.dir
+            directory = os.path.dirname(
+                os.path.realpath(
+                    args.dir)) + '\\' + args.dir
             self.list_of_bmp_files = [
                 directory +
                 '\\' +
@@ -69,11 +71,11 @@ class MainWidget(QMainWindow):
         self.move(qr.topLeft())
 
     @pyqtSlot()
-    def on_click_next(self):  # x = +1 or -1
+    def on_click_next(self):  # x = +1
         self.next_prev_image(1)
 
     @pyqtSlot()
-    def on_click_prev(self):  # x = +1 or -1
+    def on_click_prev(self):  # x =  -1
         self.next_prev_image(-1)
 
     def next_prev_image(self, x):
@@ -92,11 +94,11 @@ class MainWidget(QMainWindow):
         reader.check_file_type(self.file)
         self.header = reader.read_header(self.file)
         self.info = reader.read_info(self.file, self.header.version)
-        if self.header.version == "CORE" or self.info.compression in [0, 3, 6]:
-            self.palette = reader.read_pallete(self.file, self.info)
-            self.renderer = Render(
-                self.file, self.header, self.info, self.palette)
-            self.setCentralWidget(self.renderer)
+
+        self.palette = reader.read_pallete(self.file, self.info)
+        self.renderer = Render(
+            self.file, self.header, self.info, self.palette)
+        self.setCentralWidget(self.renderer)
 
 
 class PaletteWidget(QDialog):

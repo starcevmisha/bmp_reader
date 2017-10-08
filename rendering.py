@@ -9,6 +9,7 @@ from PyQt5.QtGui import QPainter, QColor, QPixmap
 from PyQt5 import QtCore
 from sys import argv
 from pixel_extarct import Extractor
+from pixel_extract_rle import RLEExtractor
 
 
 class Render(QWidget):
@@ -72,7 +73,10 @@ class Render(QWidget):
         painter.end()
 
     def render_pic(self, painter, size):
-        extractor = Extractor(self.file, self.header, self.info, self.palette)
+        if self.header.version == "CORE" or self.info.compression in [0, 3, 6]:
+            extractor = Extractor(self.file, self.header, self.info, self.palette)
+        elif self.info.compression in [1,2]:
+            extractor = RLEExtractor(self.file, self.header, self.info, self.palette)
         for pixel in extractor.get_pixel(size):
             (x, y), color = pixel
             painter.fillRect(x, y, size, size, QColor(*color))
