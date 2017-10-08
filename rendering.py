@@ -50,25 +50,21 @@ class Render(QWidget):
         geom = self.geometry()
         qp.begin(self)
         qp.resetTransform()
-        qp.drawPixmap((geom.width() -
-                       self.info.width *
-                       self.pixel_size) /
-                      2, (geom.height() -
-                          abs(self.info.height) *
-                          self.pixel_size) /
-                      2, self.pixmap_cache)
+        qp.drawPixmap((geom.width() -self.info.width * self.pixel_size) /2,
+                      (geom.height() - abs(self.info.height) *self.pixel_size) /2,
+                      self.pixmap_cache)
         qp.end()
 
     def draw_to_cache(self):
-
+        if max(self.info.width, self.info.height) < self.min_size:
+            self.pixel_size = math.floor(self.min_size / self.info.width)
         self.pixmap_cache = QPixmap(max(self.min_size, self.info.width),
                                     max(self.min_size, self.info.height))
         self.pixmap_cache.fill(QtCore.Qt.transparent)
 
         painter = QPainter()
         painter.begin(self.pixmap_cache)
-        if max(self.info.width, self.info.height) < self.min_size:
-            self.pixel_size = math.floor(self.min_size / self.info.width)
+
         self.render_pic(painter, self.pixel_size)
         painter.end()
 

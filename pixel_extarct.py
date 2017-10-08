@@ -61,10 +61,10 @@ class Extractor:
             row_num = self.info.height-1
             while row_num >= 0:
                 color, offset = self.get_color(offset)
-                pixels_readed_in_line += 1
                 x = pixels_readed_in_line * size
                 y = row_num * size
                 yield (x, y), color
+                pixels_readed_in_line += 1
                 if pixels_readed_in_line >= self.info.width:  # Прочиталистроку
                     while (offset - self.header.offset) % 4 != 0:
                         offset += 1
