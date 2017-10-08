@@ -5,7 +5,7 @@ import time
 import bmp_reader
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QWidget, QApplication
-from PyQt5.QtGui import QPainter, QColor, QPixmap
+from PyQt5.QtGui import QPainter, QColor, QPixmap, QStaticText, QFont
 from PyQt5 import QtCore
 from sys import argv
 from pixel_extarct import Extractor
@@ -45,6 +45,8 @@ class Render(QWidget):
             self.draw_cached()
             self.cached = True
 
+
+
     def draw_cached(self):
         qp = QPainter()
         geom = self.geometry()
@@ -64,8 +66,15 @@ class Render(QWidget):
 
         painter = QPainter()
         painter.begin(self.pixmap_cache)
+        try:
+            self.render_pic(painter, self.pixel_size)
 
-        self.render_pic(painter, self.pixel_size)
+        except:
+            geom = self.geometry()
+            painter.setFont(QFont("times", 22))
+            painter.setPen(QColor(*(255,0,0)))
+            painter.drawText(0, 30, 'ERROR. BAD IMAGE')
+
         painter.end()
 
     def render_pic(self, painter, size):
