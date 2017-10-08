@@ -17,7 +17,7 @@ class RLEExtractor:
     def get_pixel(self, size):
         offset = self.header.offset
         local_offset = 0
-        row_num = self.info.height - 1
+        row_num = self.info.height-1
 
         while row_num >= 0:
             if offset % 2 != 0:

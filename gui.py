@@ -53,7 +53,7 @@ class MainWidget(QMainWindow):
         menu_bar.addAction(prev_button)
         menu_bar.addAction(next_button)
 
-        self.resize(450, 450)
+        self.resize(600, 600)
         self.center()
         self.setWindowTitle('BMP file opener')
 

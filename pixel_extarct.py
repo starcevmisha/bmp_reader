@@ -58,7 +58,7 @@ class Extractor:
         self.get_color = self.color_extract_func[self.info.bit_count]
 
         if self.info.height > 0:
-            row_num = self.info.height - 1
+            row_num = self.info.height-1
             while row_num >= 0:
                 color, offset = self.get_color(offset)
                 pixels_readed_in_line += 1
