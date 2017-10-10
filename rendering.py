@@ -45,7 +45,6 @@ class Render(QWidget):
         # self.show()
 
     def paintEvent(self, e):
-        print(e)
         if self.pixmap_cache is not None and self.last_prefer_size == Const.prefer_pixel_size:
             self.draw_cached()
             return
@@ -79,9 +78,9 @@ class Render(QWidget):
             self.pixel_size = math.floor(self.min_size / self.info.width)
         elif max(self.info.width, self.info.height) > self.max_size:
             self.pixel_size = 1 / math.ceil(self.info.width / self.max_size)
-
+        self.last_prefer_size = Const.prefer_pixel_size
         self.pixmap_cache = QPixmap(max(self.min_size, self.info.width*self.pixel_size),
-                                    max(self.min_size, self.info.height*self.pixel_size))
+                                    max(self.min_size, abs(self.info.height)*self.pixel_size))
         self.pixmap_cache.fill(QtCore.Qt.transparent)
 
         painter = QPainter()

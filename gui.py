@@ -1,9 +1,9 @@
 from PyQt5 import QtWidgets, QtGui
 
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QDialog, QPushButton, QAction, QProgressBar, QActionGroup
+from PyQt5.QtWidgets import QDialog, QPushButton, QAction, QProgressBar, QActionGroup, QScrollArea
 from PyQt5.QtWidgets import QApplication, QDesktopWidget, QWidget, QMainWindow
-from PyQt5.QtGui import QPainter, QColor
+from PyQt5.QtGui import QPainter, QColor, QPalette
 import sys
 import bmp_reader
 from rendering import Render
@@ -76,6 +76,11 @@ class MainWidget(QMainWindow):
         self.center()
         self.setWindowTitle('BMP file opener')
 
+        self.scrollArea = QScrollArea()
+        self.scrollArea.setBackgroundRole(QPalette.Dark)
+        self.setCentralWidget(self.scrollArea)
+
+
         self.show()
 
     def show_palette(self):
@@ -107,25 +112,23 @@ class MainWidget(QMainWindow):
 
     def size_auto(self):
         Const.prefer_pixel_size = 0
-        self.repaint()
+        self.scrollArea.repaint()
         self.renderer.repaint()
     def size_100(self):
         Const.prefer_pixel_size = 1
-        self.repaint()
+        self.scrollArea.repaint()
         self.renderer.repaint()
-
     def size_200(self):
         Const.prefer_pixel_size = 2
-        self.repaint()
+        self.scrollArea.repaint()
         self.renderer.repaint()
     def size_50(self):
         Const.prefer_pixel_size = 0.5
-        self.repaint()
+        self.scrollArea.repaint()
         self.renderer.repaint()
 
     def set_image(self, name):
         try:
-            print(Const.prefer_pixel_size)
             self.setWindowTitle(os.path.basename(name))
             with open(name, 'rb') as f:
                 self.file = f.read()
@@ -143,7 +146,6 @@ class MainWidget(QMainWindow):
                 self.palette,
                 self.progressBar)
             self.renderer = renderer
-
             self.setCentralWidget(self.renderer)
         except:
             self.renderer = Render(
