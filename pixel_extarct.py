@@ -3,7 +3,7 @@ from struct import unpack
 
 class Extractor:
 
-    def __init__(self, file, header, info, palette):
+    def __init__(self, file, header, info, palette, progress_bar):
         self.file = file
         self.header = header
         self.info = info
@@ -12,6 +12,7 @@ class Extractor:
             self.set_masks()
         self.byte_count = self.info.bit_count / 8
         self.returned_bits = 0
+        self.progress_bar = progress_bar
 
         self.color_extract_func = {
             1: self.get_less_8_bit_color,
@@ -58,19 +59,24 @@ class Extractor:
         self.get_color = self.color_extract_func[self.info.bit_count]
 
         if self.info.height > 0:
-            row_num = self.info.height-1
+            row_num = self.info.height - 1
             while row_num >= 0:
+
                 color, offset = self.get_color(offset)
                 x = pixels_readed_in_line * size
                 y = row_num * size
                 yield (x, y), color
                 pixels_readed_in_line += 1
                 if pixels_readed_in_line >= self.info.width:  # Прочиталистроку
+                    if row_num % 10 == 0:
+                        self.progress_bar.setValue(
+                            int(((self.info.height - row_num) / self.info.height) * 100))
                     while (offset - self.header.offset) % 4 != 0:
                         offset += 1
                     row_num -= 1
                     pixels_readed_in_line = 0
                     self.returned_bits = 0
+
         else:  # Если перевернуто изображение
             row_num = self.info.height + 1
             while row_num <= 0:
@@ -80,6 +86,9 @@ class Extractor:
                 y = (row_num - self.info.height) * size
                 yield (x, y), color
                 if pixels_readed_in_line >= self.info.width:  # Прочиталистроку
+                    if row_num % 10 == 0:
+                        self.progress_bar.setValue(
+                            int(((self.info.height - row_num) / self.info.height) * 100))
                     while (offset - self.header.offset) % 4 != 0:
                         offset += 1
                     row_num += 1

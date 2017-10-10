@@ -3,7 +3,7 @@ from struct import unpack
 
 class RLEExtractor:
 
-    def __init__(self, file, header, info, palette):
+    def __init__(self, file, header, info, palette, progress_bar):
         self.file = file
         self.header = header
         self.info = info
@@ -13,11 +13,12 @@ class RLEExtractor:
             1: self.end_of_image,
             2: self.shift
         }
+        self.progress_bar = progress_bar
 
     def get_pixel(self, size):
         offset = self.header.offset
         local_offset = 0
-        row_num = self.info.height-1
+        row_num = self.info.height - 1
 
         while row_num >= 0:
             if offset % 2 != 0:
@@ -35,7 +36,9 @@ class RLEExtractor:
                     for i in range(second):
                         if pixels_count >= second or local_offset > self.info.width:
                             break
-                        raw_color = unpack('B', self.file[offset + 2:offset + 3])[0]
+                        raw_color = unpack(
+                            'B', self.file[
+                                offset + 2:offset + 3])[0]
                         colors = self.extract_colors(raw_color)
                         for color in colors:
                             if pixels_count >= second:
@@ -55,10 +58,10 @@ class RLEExtractor:
                 colors = self.extract_colors(raw_color)
                 flag = False
                 for i in range(first):
-                    if flag == False:
+                    if not flag:
                         for color in colors:
                             if pixels_count >= first or local_offset > self.info.width:
-                                flag= True
+                                flag = True
                                 break
                             x = local_offset * size
                             y = row_num * size
@@ -71,12 +74,17 @@ class RLEExtractor:
         offset += 2
         local_offset = 0
         row_num -= 1
+        if row_num % 10 == 0:
+            self.progress_bar.setValue(
+                int(((self.info.height - row_num) / self.info.height) * 100))
         return offset, local_offset, row_num
 
-    def end_of_image(self,offset, local_offset, row_num):
+    def end_of_image(self, offset, local_offset, row_num):
         raise StopIteration
 
     def shift(self, offset, local_offset, row_num):
+        self.progress_bar.setValue(
+            int(((self.info.height - row_num) / self.info.height) * 100))
         x_offset = unpack('B', self.file[offset + 2:offset + 3])[0]
         y_offset = unpack('B', self.file[offset + 3:offset + 4])[0]
         local_offset += x_offset
