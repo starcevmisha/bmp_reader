@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, Qt
 
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QDialog, QPushButton, QAction, QProgressBar, QActionGroup, QScrollArea
@@ -76,10 +76,6 @@ class MainWidget(QMainWindow):
         self.center()
         self.setWindowTitle('BMP file opener')
 
-        self.scrollArea = QScrollArea()
-        self.scrollArea.setBackgroundRole(QPalette.Dark)
-        self.setCentralWidget(self.scrollArea)
-
 
         self.show()
 
@@ -112,19 +108,19 @@ class MainWidget(QMainWindow):
 
     def size_auto(self):
         Const.prefer_pixel_size = 0
-        self.scrollArea.repaint()
+        self.repaint()
         self.renderer.repaint()
     def size_100(self):
         Const.prefer_pixel_size = 1
-        self.scrollArea.repaint()
+        self.repaint()
         self.renderer.repaint()
     def size_200(self):
         Const.prefer_pixel_size = 2
-        self.scrollArea.repaint()
+        self.repaint()
         self.renderer.repaint()
     def size_50(self):
         Const.prefer_pixel_size = 0.5
-        self.scrollArea.repaint()
+        self.repaint()
         self.renderer.repaint()
 
     def set_image(self, name):
@@ -158,6 +154,7 @@ class PaletteWidget(QDialog):
         QWidget.__init__(self, parent)
         self.palette = palette
         self.setWindowTitle('Palette')
+        self.setWindowFlags(self.windowFlags());
 
     def paintEvent(self, e):
         painter = QPainter()

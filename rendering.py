@@ -113,7 +113,7 @@ class Render(QWidget):
             t = 1
             max_t = round(1 / size)
             for pixel in extractor.get_pixel(size):
-                if t == 1:
+                if t < max_t:
                     (x, y), color = pixel
                     painter.fillRect(int(x), int(y), 1, 1, QColor(*color))
                 elif t == max_t:
