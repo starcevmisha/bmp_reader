@@ -1,3 +1,4 @@
+import threading
 from struct import unpack
 
 import math
@@ -21,14 +22,14 @@ class Render(QWidget):
             header,
             info,
             palette,
-            progress_bar=None,
+            gui=None,
             parent=None):
         QtWidgets.QMainWindow.__init__(self, parent)
         self.file = file
         self.header = header
         self.info = info
         self.palette = palette
-        self.progress_bar = progress_bar
+        self.gui = gui
         self.initUI()
 
         self.pixmap_cache = None
@@ -36,6 +37,7 @@ class Render(QWidget):
         self.min_size = 300
         self.pixel_size = 1
         self.max_size = 1000
+        self.thread = threading.Thread(target=self.draw_to_cache, args=())
 
         self.last_prefer_size = 0
 
@@ -45,16 +47,15 @@ class Render(QWidget):
         # self.show()
 
     def paintEvent(self, e):
+        if self.thread.is_alive():
+            return
         if self.pixmap_cache is not None and\
                         self.last_prefer_size == Const.prefer_pixel_size:
             self.draw_cached()
             return
 
-        self.draw_to_cache()
-
-        if not self.cached:
-            self.draw_cached()
-            self.cached = True
+        self.thread.start()
+        self.thread = threading.Thread(target=self.draw_to_cache, args=())
 
     def draw_cached(self):
         qp = QPainter()
@@ -86,9 +87,9 @@ class Render(QWidget):
                                         abs(self.info.height) *
                                         self.pixel_size))
         self.pixmap_cache.fill(QtCore.Qt.transparent)
-
         painter = QPainter()
         painter.begin(self.pixmap_cache)
+
         try:
             self.render_pic(painter, self.pixel_size)
         except:
@@ -96,23 +97,26 @@ class Render(QWidget):
             painter.setPen(QColor(*(255, 0, 0)))
             painter.drawText(0, 30, 'ERROR. BAD IMAGE')
 
-        painter.end()
 
-    def render_pic(self, painter, size):
+
+
+    def render_pic(self, painter,  size):
+
         if self.header.version == "CORE" or self.info.compression in [0, 3, 6]:
             extractor = Extractor(
                 self.file,
                 self.header,
                 self.info,
                 self.palette,
-                self.progress_bar)
+                self.gui)
         elif self.info.compression in [1, 2]:
             extractor = RLEExtractor(
                 self.file,
                 self.header,
                 self.info,
                 self.palette,
-                self.progress_bar)
+                self.gui)
+        self.gui.make_connection(extractor)
         if size < 1:
             t = 1
             max_t = round(1 / size)
@@ -127,6 +131,7 @@ class Render(QWidget):
             for pixel in extractor.get_pixel(size):
                 (x, y), color = pixel
                 painter.fillRect(x, y, size, size, QColor(*color))
+        self.update()
 
     def new_file(self, file, header, info, palette):
         self.file = file

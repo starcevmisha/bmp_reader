@@ -16,6 +16,7 @@ class MainWidget(QMainWindow):
     def __init__(self, args, parent=None):
         QtWidgets.QMainWindow.__init__(self, parent)
         self.palette = []
+        self.renderer = None
         self.initUI()
 
         if args.file:
@@ -78,6 +79,13 @@ class MainWidget(QMainWindow):
         self.setWindowTitle('BMP file opener')
 
         self.show()
+
+    @pyqtSlot(int)
+    def get_extractor_value(self, val):
+        self.progressBar.setValue(val)
+
+    def make_connection(self, extractor):
+        extractor.changedValue.connect(self.get_extractor_value)
 
     def show_palette(self):
         palette_widget = PaletteWidget(self.palette)
@@ -143,7 +151,7 @@ class MainWidget(QMainWindow):
                 self.header,
                 self.info,
                 self.palette,
-                self.progressBar)
+                self)
             self.renderer = renderer
             self.setCentralWidget(self.renderer)
         except:

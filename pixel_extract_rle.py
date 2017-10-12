@@ -1,9 +1,11 @@
 from struct import unpack
+from PyQt5.QtCore import QObject, pyqtSignal
 
-
-class RLEExtractor:
+class RLEExtractor(QObject):
+    changedValue = pyqtSignal(int)
 
     def __init__(self, file, header, info, palette, progress_bar):
+        super().__init__()
         self.file = file
         self.header = header
         self.info = info
@@ -77,8 +79,8 @@ class RLEExtractor:
         local_offset = 0
         row_num -= 1
         if row_num % 10 == 0:
-            self.progress_bar.setValue(
-                int(((self.info.height - row_num) / self.info.height) * 100))
+            self.changedValue.emit(int(((self.info.height - row_num) /
+                                        self.info.height) * 100))
         return offset, local_offset, row_num
 
     def end_of_image(self, offset, local_offset, row_num):
