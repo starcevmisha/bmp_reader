@@ -1,9 +1,9 @@
 from PyQt5 import QtWidgets, QtGui, Qt
-
+import PyQt5
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QDialog, QPushButton, QAction, QProgressBar, QActionGroup, QScrollArea
-from PyQt5.QtWidgets import QApplication, QDesktopWidget, QWidget, QMainWindow
-from PyQt5.QtGui import QPainter, QColor, QPalette
+from PyQt5.QtWidgets import QDialog,  QAction, QProgressBar
+from PyQt5.QtWidgets import QApplication, QDesktopWidget,  QMainWindow
+from PyQt5.QtGui import QPainter, QColor
 import sys
 import bmp_reader
 from rendering import Render
@@ -12,6 +12,7 @@ from const import Const
 
 
 class MainWidget(QMainWindow):
+
     def __init__(self, args, parent=None):
         QtWidgets.QMainWindow.__init__(self, parent)
         self.palette = []
@@ -76,7 +77,6 @@ class MainWidget(QMainWindow):
         self.center()
         self.setWindowTitle('BMP file opener')
 
-
         self.show()
 
     def show_palette(self):
@@ -110,14 +110,17 @@ class MainWidget(QMainWindow):
         Const.prefer_pixel_size = 0
         self.repaint()
         self.renderer.repaint()
+
     def size_100(self):
         Const.prefer_pixel_size = 1
         self.repaint()
         self.renderer.repaint()
+
     def size_200(self):
         Const.prefer_pixel_size = 2
         self.repaint()
         self.renderer.repaint()
+
     def size_50(self):
         Const.prefer_pixel_size = 0.5
         self.repaint()
@@ -151,10 +154,14 @@ class MainWidget(QMainWindow):
 class PaletteWidget(QDialog):
 
     def __init__(self, palette, parent=None):
-        QWidget.__init__(self, parent)
+        QDialog.__init__(
+            self,
+            parent,
+            PyQt5.QtCore.Qt.WindowSystemMenuHint |
+            PyQt5.QtCore.Qt.WindowCloseButtonHint)
         self.palette = palette
         self.setWindowTitle('Palette')
-        self.setWindowFlags(self.windowFlags());
+        self.setWindowFlags(self.windowFlags())
 
     def paintEvent(self, e):
         painter = QPainter()

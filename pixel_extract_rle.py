@@ -34,7 +34,8 @@ class RLEExtractor:
                 else:
                     pixels_count = 0
                     for i in range(second):
-                        if pixels_count >= second or local_offset > self.info.width:
+                        if pixels_count >= \
+                                second or local_offset > self.info.width:
                             break
                         raw_color = unpack(
                             'B', self.file[
@@ -60,7 +61,8 @@ class RLEExtractor:
                 for i in range(first):
                     if not flag:
                         for color in colors:
-                            if pixels_count >= first or local_offset > self.info.width:
+                            if pixels_count >= \
+                                    first or local_offset > self.info.width:
                                 flag = True
                                 break
                             x = local_offset * size

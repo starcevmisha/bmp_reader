@@ -67,10 +67,11 @@ class Extractor:
                 y = row_num * size
                 yield (x, y), color
                 pixels_readed_in_line += 1
-                if pixels_readed_in_line >= self.info.width:  # Прочиталистроку
+                if pixels_readed_in_line >= self.info.width:  # Прочиталистрок
                     if row_num % 10 == 0:
                         self.progress_bar.setValue(
-                            int(((self.info.height - row_num) / self.info.height) * 100))
+                            int(((self.info.height - row_num) /
+                                 self.info.height) * 100))
                     while (offset - self.header.offset) % 4 != 0:
                         offset += 1
                     row_num -= 1
@@ -85,10 +86,11 @@ class Extractor:
                 x = pixels_readed_in_line * size
                 y = (row_num - self.info.height) * size
                 yield (x, y), color
-                if pixels_readed_in_line >= self.info.width:  # Прочиталистроку
+                if pixels_readed_in_line >= self.info.width:  # Прочиталистрок
                     if row_num % 10 == 0:
                         self.progress_bar.setValue(
-                            int(((self.info.height - row_num) / self.info.height) * 100))
+                            int(((self.info.height - row_num) /
+                                 self.info.height) * 100))
                     while (offset - self.header.offset) % 4 != 0:
                         offset += 1
                     row_num += 1
