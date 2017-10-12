@@ -1,10 +1,11 @@
 from PyQt5.QtCore import QObject, pyqtSignal
 from struct import unpack
 
+
 class Extractor(QObject):
     changedValue = pyqtSignal(int)
 
-    def __init__(self, file, header, info, palette, progress_bar):
+    def __init__(self, file, header, info, palette):
         super().__init__()
         self.file = file
         self.header = header
@@ -14,7 +15,6 @@ class Extractor(QObject):
             self.set_masks()
         self.byte_count = self.info.bit_count / 8
         self.returned_bits = 0
-        self.progress_bar = progress_bar
 
         self.color_extract_func = {
             1: self.get_less_8_bit_color,
@@ -70,9 +70,10 @@ class Extractor(QObject):
                 yield (x, y), color
                 pixels_readed_in_line += 1
                 if pixels_readed_in_line >= self.info.width:  # Прочиталистрок
-                    if row_num%10 == 0:
-                        self.changedValue.emit(int(((self.info.height - row_num) /
-                                 self.info.height) * 100))
+                    if row_num % 10 == 0:
+                        self.changedValue.emit(
+                            int(((self.info.height - row_num) /
+                                                    self.info.height) * 100))
                     while (offset - self.header.offset) % 4 != 0:
                         offset += 1
                     row_num -= 1
@@ -88,7 +89,7 @@ class Extractor(QObject):
                 y = (row_num - self.info.height) * size
                 yield (x, y), color
                 if pixels_readed_in_line >= self.info.width:  # Прочиталистрок
-                    if row_num%10 == 0:
+                    if row_num % 10 == 0:
                         self.changedValue.emit(row_num)
                     while (offset - self.header.offset) % 4 != 0:
                         offset += 1

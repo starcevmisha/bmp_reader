@@ -50,7 +50,7 @@ class Render(QWidget):
         if self.thread.is_alive():
             return
         if self.pixmap_cache is not None and\
-                        self.last_prefer_size == Const.prefer_pixel_size:
+                self.last_prefer_size == Const.prefer_pixel_size:
             self.draw_cached()
             return
 
@@ -97,25 +97,20 @@ class Render(QWidget):
             painter.setPen(QColor(*(255, 0, 0)))
             painter.drawText(0, 30, 'ERROR. BAD IMAGE')
 
-
-
-
-    def render_pic(self, painter,  size):
+    def render_pic(self, painter, size):
 
         if self.header.version == "CORE" or self.info.compression in [0, 3, 6]:
             extractor = Extractor(
                 self.file,
                 self.header,
                 self.info,
-                self.palette,
-                self.gui)
+                self.palette)
         elif self.info.compression in [1, 2]:
             extractor = RLEExtractor(
                 self.file,
                 self.header,
                 self.info,
-                self.palette,
-                self.gui)
+                self.palette)
         self.gui.make_connection(extractor)
         if size < 1:
             t = 1

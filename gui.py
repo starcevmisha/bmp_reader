@@ -1,8 +1,8 @@
 from PyQt5 import QtWidgets, QtGui, Qt
 import PyQt5
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QDialog,  QAction, QProgressBar
-from PyQt5.QtWidgets import QApplication, QDesktopWidget,  QMainWindow
+from PyQt5.QtWidgets import QDialog, QAction, QProgressBar
+from PyQt5.QtWidgets import QApplication, QDesktopWidget, QMainWindow
 from PyQt5.QtGui import QPainter, QColor
 import sys
 import bmp_reader
@@ -150,8 +150,7 @@ class MainWidget(QMainWindow):
                 self.file,
                 self.header,
                 self.info,
-                self.palette,
-                self)
+                self.palette, self)
             self.renderer = renderer
             self.setCentralWidget(self.renderer)
         except:

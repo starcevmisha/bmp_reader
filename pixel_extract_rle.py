@@ -1,10 +1,11 @@
 from struct import unpack
 from PyQt5.QtCore import QObject, pyqtSignal
 
+
 class RLEExtractor(QObject):
     changedValue = pyqtSignal(int)
 
-    def __init__(self, file, header, info, palette, progress_bar):
+    def __init__(self, file, header, info, palette):
         super().__init__()
         self.file = file
         self.header = header
@@ -15,7 +16,6 @@ class RLEExtractor(QObject):
             1: self.end_of_image,
             2: self.shift
         }
-        self.progress_bar = progress_bar
 
     def get_pixel(self, size):
         offset = self.header.offset
