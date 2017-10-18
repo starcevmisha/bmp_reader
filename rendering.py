@@ -118,17 +118,23 @@ class Render(QWidget):
             max_t = round(1 / size)
             for pixel in extractor.get_pixel(size):
                 if self.is_active_thread:
+
                     if t < max_t:
                         (x, y), color = pixel
                         painter.fillRect(int(x), int(y), 1, 1, QColor(*color))
                     elif t == max_t:
                         t = 0
                     t += 1
+
+                else:
+                    exit()
         else:
             for pixel in extractor.get_pixel(size):
                 if self.is_active_thread:
                     (x, y), color = pixel
                     painter.fillRect(x, y, size, size, QColor(*color))
+                else:
+                    exit()
         self.update()
 
     def new_file(self, file, header, info, palette):
