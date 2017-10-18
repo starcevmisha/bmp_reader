@@ -25,6 +25,7 @@ class Render(QWidget):
             gui=None,
             parent=None):
         QtWidgets.QMainWindow.__init__(self, parent)
+        self.is_active_thread = True
         self.file = file
         self.header = header
         self.info = info
@@ -37,7 +38,7 @@ class Render(QWidget):
         self.min_size = 300
         self.pixel_size = 1
         self.max_size = 1000
-        self.thread = threading.Thread(target=self.draw_to_cache, args=())
+        self.thread = None # threading.Thread(target=self.draw_to_cache, args=())
 
         self.last_prefer_size = 0
 
@@ -47,15 +48,15 @@ class Render(QWidget):
         # self.show()
 
     def paintEvent(self, e):
-        if self.thread.is_alive():
-            return
-        if self.pixmap_cache is not None and\
-                self.last_prefer_size == Const.prefer_pixel_size:
+        # if self.thread.is_alive():
+        #     return
+        if self.pixmap_cache is not None and \
+                        self.last_prefer_size == Const.prefer_pixel_size:
             self.draw_cached()
             return
 
-        self.thread.start()
         self.thread = threading.Thread(target=self.draw_to_cache, args=())
+        self.thread.start()
 
     def draw_cached(self):
         qp = QPainter()
@@ -116,16 +117,18 @@ class Render(QWidget):
             t = 1
             max_t = round(1 / size)
             for pixel in extractor.get_pixel(size):
-                if t < max_t:
-                    (x, y), color = pixel
-                    painter.fillRect(int(x), int(y), 1, 1, QColor(*color))
-                elif t == max_t:
-                    t = 0
-                t += 1
+                if self.is_active_thread:
+                    if t < max_t:
+                        (x, y), color = pixel
+                        painter.fillRect(int(x), int(y), 1, 1, QColor(*color))
+                    elif t == max_t:
+                        t = 0
+                    t += 1
         else:
             for pixel in extractor.get_pixel(size):
-                (x, y), color = pixel
-                painter.fillRect(x, y, size, size, QColor(*color))
+                if self.is_active_thread:
+                    (x, y), color = pixel
+                    painter.fillRect(x, y, size, size, QColor(*color))
         self.update()
 
     def new_file(self, file, header, info, palette):

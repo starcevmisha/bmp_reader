@@ -145,7 +145,8 @@ class MainWidget(QMainWindow):
             self.info = reader.read_info(self.file, self.header.version)
 
             self.palette = reader.read_pallete(self.file, self.info)
-
+            if not self.renderer is None:
+                self.renderer.is_active_thread = False
             renderer = Render(
                 self.file,
                 self.header,
