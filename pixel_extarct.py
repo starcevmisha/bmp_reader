@@ -57,45 +57,29 @@ class Extractor(QObject):
 
     def get_pixel(self, size):
         offset = self.header.offset
-        pixels_readed_in_line = 0
         self.get_color = self.color_extract_func[self.info.bit_count]
+        yield from self.yield_pixel(offset, size, self.info.height < 0)
 
-        if self.info.height > 0:
-            row_num = self.info.height - 1
-            while row_num >= 0:
-
-                color, offset = self.get_color(offset)
-                x = pixels_readed_in_line * size
-                y = row_num * size
-                yield (x, y), color
-                pixels_readed_in_line += 1
-                if pixels_readed_in_line >= self.info.width:  # Прочиталистрок
-                    if row_num % 10 == 0:
-                        self.changedValue.emit(
-                            int(((self.info.height - row_num) /
-                                                    self.info.height) * 100))
-                    while (offset - self.header.offset) % 4 != 0:
-                        offset += 1
-                    row_num -= 1
-                    pixels_readed_in_line = 0
-                    self.returned_bits = 0
-
-        else:  # Если перевернуто изображение
-            row_num = self.info.height + 1
-            while row_num <= 0:
-                color, offset = self.get_color(offset)
-                pixels_readed_in_line += 1
-                x = pixels_readed_in_line * size
-                y = (row_num - self.info.height) * size
-                yield (x, y), color
-                if pixels_readed_in_line >= self.info.width:  # Прочиталистрок
-                    if row_num % 10 == 0:
-                        self.changedValue.emit(row_num)
-                    while (offset - self.header.offset) % 4 != 0:
-                        offset += 1
-                    row_num += 1
-                    pixels_readed_in_line = 0
-                    self.returned_bits = 0
+    def yield_pixel(self, offset, size, is_top_down):
+        pixels_read_in_line = 0
+        row_num = self.info.height + (1 if is_top_down else -1)
+        while (row_num <= 0 if is_top_down else row_num >= 0):
+            color, offset = self.get_color(offset)
+            x = pixels_read_in_line * size
+            y = (row_num - self.info.height) * size if is_top_down \
+                else row_num * size
+            yield (x, y), color
+            pixels_read_in_line += 1
+            if pixels_read_in_line >= self.info.width:  # Прочиталистрок
+                if row_num % 10 == 0:
+                    self.changedValue.emit(
+                        int(((self.info.height - row_num) /
+                             self.info.height) * 100))
+                while (offset - self.header.offset) % 4 != 0:
+                    offset += 1
+                row_num += 1 if is_top_down else -1
+                pixels_read_in_line = 0
+                self.returned_bits = 0
 
     def get_32_bit_color(self, offset):
         color = self.int_to_rgb(unpack('<I', self.file[offset:offset + 4])[0])
