@@ -45,11 +45,8 @@ class RLEExtractor(QObject):
                         for color in colors:
                             if pixels_count >= second:
                                 break
-                            x = local_offset * size
-                            y = row_num * size
-                            yield (x, y), self.palette[color]
-                            local_offset += 1
-                            pixels_count += 1
+                            local_offset, pixels_count = yield from self.yield_pixel(color, local_offset, pixels_count,
+                                                                                     row_num, size)
                         offset += 1
                     offset += 2
 
@@ -65,12 +62,17 @@ class RLEExtractor(QObject):
                                     first or local_offset > self.info.width:
                                 flag = True
                                 break
-                            x = local_offset * size
-                            y = row_num * size
-                            yield (x, y), self.palette[color]
-                            pixels_count += 1
-                            local_offset += 1
+                            local_offset, pixels_count = yield from self.yield_pixel(color, local_offset, pixels_count,
+                                                                                     row_num, size)
                 offset += 2
+
+    def yield_pixel(self, color, local_offset, pixels_count, row_num, size):
+        x = local_offset * size
+        y = row_num * size
+        yield (x, y), self.palette[color]
+        pixels_count += 1
+        local_offset += 1
+        return local_offset, pixels_count
 
     def next_row(self, offset, local_offset, row_num):
         offset += 2
