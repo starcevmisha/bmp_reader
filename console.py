@@ -19,19 +19,21 @@ elif args.file:
     try:
         with open(args.file, 'rb') as f:
             file = f.read()
-            reader = bmp_reader.Reader()
-            reader.check_file_type(file)
-            header = reader.read_header(file)
-            print('BitmapFileHeader')
-            for i in header:
-                print(' ' * 4 + i)
-            info = reader.read_info(file, header.version)
-            print("\nBitmapInfoHeader")
-            for i in info:
-                print(' ' * 4 + i)
     except FileNotFoundError:
         print("No such file")
-        sys.exit(0)
+        sys.exit(85)
+
+    reader = bmp_reader.Reader()
+    reader.check_file_type(file)
+    header = reader.read_header(file)
+    print('BitmapFileHeader')
+    for i in header:
+        print(' ' * 4 + i)
+    info = reader.read_info(file, header.version)
+    print("\nBitmapInfoHeader")
+    for i in info:
+        print(' ' * 4 + i)
+
 
 elif args.dir:
     print("Open directory only in gui mod")

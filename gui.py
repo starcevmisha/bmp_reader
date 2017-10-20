@@ -22,8 +22,8 @@ class MainWidget(QMainWindow):
 
         if args.file:
             if not os.path.exists(args.file):
-                print("This file does not exist")
-                sys.exit(0)
+                print("No such file")
+                sys.exit(85)
             self.file_name = os.path.realpath(args.file)
 
             directory = os.path.dirname(os.path.realpath(self.file_name))
@@ -34,8 +34,8 @@ class MainWidget(QMainWindow):
 
         if args.dir:
             if not os.path.exists(args.dir):
-                print("This directory does not exist")
-                sys.exit(0)
+                print("No such directory")
+                sys.exit(86)
             directory = os.path.realpath(args.dir)
             self.list_of_bmp_files = [
                 directory +
