@@ -12,6 +12,7 @@ from sys import argv
 from const import Const
 from pixel_extarct import Extractor
 from pixel_extract_rle import RLEExtractor
+import sys
 
 
 class Render(QWidget):
@@ -38,7 +39,8 @@ class Render(QWidget):
         self.min_size = 300
         self.pixel_size = 1
         self.max_size = 1000
-        self.thread = None # threading.Thread(target=self.draw_to_cache, args=())
+        # threading.Thread(target=self.draw_to_cache, args=())
+        self.thread = None
 
         self.last_prefer_size = 0
 
@@ -48,10 +50,10 @@ class Render(QWidget):
         # self.show()
 
     def paintEvent(self, e):
-        # if self.thread.is_alive():
-        #     return
+        if self.thread is not None and self.thread.is_alive():
+            return
         if self.pixmap_cache is not None and \
-                        self.last_prefer_size == Const.prefer_pixel_size:
+                self.last_prefer_size == Const.prefer_pixel_size:
             self.draw_cached()
             return
 
@@ -127,7 +129,7 @@ class Render(QWidget):
                     t += 1
 
                 else:
-                    exit()
+                    sys.exit()
         else:
             for pixel in extractor.get_pixel(size):
                 if self.is_active_thread:

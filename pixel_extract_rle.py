@@ -32,7 +32,6 @@ class RLEExtractor(QObject):
                 if second in self.cases.keys():
                     offset, local_offset, row_num = self.cases[
                         second](offset, local_offset, row_num)
-
                 else:
                     pixels_count = 0
                     for i in range(second):
@@ -55,7 +54,6 @@ class RLEExtractor(QObject):
                     offset += 2
 
             else:
-
                 pixels_count = 0
                 raw_color = unpack('B', self.file[offset + 1:offset + 2])[0]
                 colors = self.extract_colors(raw_color)

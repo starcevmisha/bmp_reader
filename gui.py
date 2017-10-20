@@ -9,6 +9,7 @@ import bmp_reader
 from rendering import Render
 import os
 from const import Const
+import sys
 
 
 class MainWidget(QMainWindow):
@@ -20,15 +21,21 @@ class MainWidget(QMainWindow):
         self.initUI()
 
         if args.file:
+            if not os.path.exists(args.file):
+                print("This file does not exist")
+                sys.exit(0)
             self.file_name = os.path.realpath(args.file)
 
             directory = os.path.dirname(os.path.realpath(self.file_name))
             self.list_of_bmp_files = [
-                directory +
-                '\\' +
-                f for f in os.listdir(directory) if f.endswith('.bmp')]
+                os.path.join(directory, f)
+                for f in os.listdir(directory) if f.endswith('.bmp')]
             self.list_index = self.list_of_bmp_files.index(self.file_name)
+
         if args.dir:
+            if not os.path.exists(args.dir):
+                print("This directory does not exist")
+                sys.exit(0)
             directory = os.path.realpath(args.dir)
             self.list_of_bmp_files = [
                 directory +
@@ -145,7 +152,7 @@ class MainWidget(QMainWindow):
             self.info = reader.read_info(self.file, self.header.version)
 
             self.palette = reader.read_pallete(self.file, self.info)
-            if not self.renderer is None:
+            if self.renderer is not None:
                 self.renderer.is_active_thread = False
             renderer = Render(
                 self.file,
